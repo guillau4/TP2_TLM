@@ -18,7 +18,9 @@ void generator::thread(void){
     uint32_t data;
     uint32_t data_1;
     uint32_t data_2;
+    uint32_t loop=0;
     while(true){
+        loop = (loop + 1)%240;
         sc_time period(1.0/25, SC_SEC);
         wait(period);
 
@@ -33,14 +35,15 @@ void generator::thread(void){
                 data_1 = data_1|((data & mask_1)>>j*4) ;
                 data_2 = data_2|((data & mask_2)<<((4-j)*4));
             }
-            initiator.write(START_ADD_MEM_VID + i*2,data_1);
-            initiator.write(START_ADD_MEM_VID + i*2+4,data_2);
+            initiator.write(START_ADD_MEM_VID + (i*2 + 320*loop)%76800,data_1);
+            initiator.write(START_ADD_MEM_VID + (i*2+4 + 320*loop)%76800,data_2);
         }
         wait(start_int);
     }
 }
 void generator::method(void){
     start_int.notify();
+    initiator.write(START_ADD_LCDC + LCDC_INT_REG, 0x00000000); 
     cout<<"Generator: interrupted"<<endl;
 }
 
